@@ -1,111 +1,111 @@
-# Micro Language Scanner
+# Analyseur Lexical du Langage Micro
 
 <div align="center">
 
-![Language](https://img.shields.io/badge/language-C-blue?style=for-the-badge&logo=c)
-![License](https://img.shields.io/badge/license-Academic-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/status-Educational-orange?style=for-the-badge)
-![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge)
+![Langage](https://img.shields.io/badge/langage-C-blue?style=for-the-badge&logo=c)
+![Licence](https://img.shields.io/badge/licence-Académique-green?style=for-the-badge)
+![Statut](https://img.shields.io/badge/statut-Éducatif-orange?style=for-the-badge)
+![Plateforme](https://img.shields.io/badge/plateforme-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge)
 
-**A lexical analyzer for the Micro educational programming language**
+**Un analyseur lexical pour le langage éducatif Micro**
 
-*Demonstrating the fundamental principles of lexical analysis — the first phase of compilation*
+*Démonstration des principes fondamentaux de l'analyse lexicale — la première phase de la compilation*
 
-[Overview](#-overview) •
-[Architecture](#-architecture--design) •
-[Building](#-building-the-scanner) •
-[Usage](#-running-the-scanner) •
-[Theory](#-academic-background--theory) •
-[Extensions](#-suggested-extensions-for-further-research)
+[Aperçu](#-aperçu) •
+[Architecture](#-architecture--conception) •
+[Compilation](#-compilation-de-lanalyseur) •
+[Utilisation](#-exécution-de-lanalyseur) •
+[Théorie](#-contexte-académique--théorie) •
+[Extensions](#-extensions-suggérées-pour-la-recherche)
 
 </div>
 
 ---
 
-## 📋 Table of Contents
+## 📋 Table des Matières
 
 <details>
-<summary>Click to expand</summary>
+<summary>Cliquez pour développer</summary>
 
-- [Overview](#-overview)
-- [Project Structure](#-project-structure)
-- [The Micro Language](#-the-micro-language)
-- [Token Specification](#-token-specification)
-- [Architecture & Design](#-architecture--design)
-- [Detailed Code Walkthrough](#-detailed-code-walkthrough)
-- [Building the Scanner](#-building-the-scanner)
-- [Running the Scanner](#-running-the-scanner)
-- [Sample Inputs & Expected Outputs](#-sample-inputs--expected-outputs)
-- [Comparison with Real Compilers](#-comparison-with-real-compilers)
-- [Academic Background & Theory](#-academic-background--theory)
-- [Limitations & Known Issues](#-limitations--known-issues)
-- [Suggested Extensions](#-suggested-extensions-for-further-research)
-- [Testing Strategy](#-testing-strategy)
-- [License & Acknowledgments](#-license--acknowledgments)
-- [Quick Reference Card](#-quick-reference-card)
+- [Aperçu](#-aperçu)
+- [Structure du Projet](#-structure-du-projet)
+- [Le Langage Micro](#-le-langage-micro)
+- [Spécification des Tokens](#-spécification-des-tokens)
+- [Architecture & Conception](#-architecture--conception)
+- [Analyse Détaillée du Code](#-analyse-détaillée-du-code)
+- [Compilation de l'Analyseur](#-compilation-de-lanalyseur)
+- [Exécution de l'Analyseur](#-exécution-de-lanalyseur)
+- [Exemples d'Entrées & Sorties Attendues](#-exemples-dentrées--sorties-attendues)
+- [Comparaison avec les Compilateurs Réels](#-comparaison-avec-les-compilateurs-réels)
+- [Contexte Académique & Théorie](#-contexte-académique--théorie)
+- [Limitations & Problèmes Connus](#-limitations--problèmes-connus)
+- [Extensions Suggérées](#-extensions-suggérées-pour-la-recherche)
+- [Stratégie de Test](#-stratégie-de-test)
+- [Licence & Remerciements](#-licence--remerciements)
+- [Carte de Référence Rapide](#-carte-de-référence-rapide)
 
 </details>
 
 ---
 
-## 🔍 Overview
+## 🔍 Aperçu
 
-This project implements a **scanner** (also called a *lexer* or *tokenizer*) for the **Micro** language. The scanner reads a source file written in Micro, breaks it into a stream of **tokens**, and writes the token stream to an output file.
+Ce projet implémente un **scanner** (aussi appelé *lexer* ou *tokenizer*) pour le langage **Micro**. Le scanner lit un fichier source écrit en Micro, le découpe en un flux de **tokens**, et écrit ce flux dans un fichier de sortie.
 
-### Compilation Pipeline
+### Pipeline de Compilation
 
 ```mermaid
 graph LR
-    A[Source Code] --> B[SCANNER]
-    B --> C[Token Stream]
+    A[Code Source] --> B[SCANNER]
+    B --> C[Flux de Tokens]
     C --> D[PARSER]
     D --> E[AST]
-    E --> F[SEMANTIC ANALYZER]
+    E --> F[ANALYSEUR SÉMANTIQUE]
     F --> G[IR]
-    G --> H[OPTIMIZER]
-    H --> I[CODE GENERATOR]
-    I --> J[Machine Code]
+    G --> H[OPTIMISEUR]
+    H --> I[GÉNÉRATEUR DE CODE]
+    I --> J[Code Machine]
     
     style B fill:#4a90d9,stroke:#2c5aa0,color:#fff
     style C fill:#f5a623,stroke:#d4891a,color:#fff
 ```
 
-### What the Scanner Recognizes
+### Ce que le Scanner Reconnaît
 
-| Category | Elements |
-|----------|----------|
-| **Keywords** | `begin`, `end`, `read`, `write` |
-| **Identifiers** | `x`, `y`, `counter`, `_temp` |
-| **Integer Literals** | `52`, `0`, `001` |
-| **Operators** | `:=` (assignment), `+` (plus), `-` (minus) |
-| **Punctuation** | `(`, `)`, `;`, `,` |
-| **Comments** | `--` to end of line |
-| **EOF Marker** | `SCANEOF` |
+| Catégorie | Éléments |
+|-----------|----------|
+| **Mots-clés** | `begin`, `end`, `read`, `write` |
+| **Identificateurs** | `x`, `y`, `counter`, `_temp` |
+| **Littéraux Entiers** | `52`, `0`, `001` |
+| **Opérateurs** | `:=` (affectation), `+` (plus), `-` (moins) |
+| **Ponctuation** | `(`, `)`, `;`, `,` |
+| **Commentaires** | `--` jusqu'à la fin de ligne |
+| **Marqueur EOF** | `SCANEOF` |
 
 ---
 
-## 📁 Project Structure
+## 📁 Structure du Projet
 
 ```
 .
-├── 📄 scanner2.c          # The main scanner implementation
-├── 🔧 scanner             # Compiled binary (Linux/macOS)
-├── 🔧 scanner2            # Alternative compiled binary
-├── 📝 test.micro          # Sample Micro program (without begin/end)
-├── 📝 test1.micro         # Sample Micro program (with begin/end)
-├── 📤 output.txt          # Example token stream from test.micro
-└── 📦 repomix-output.xml  # Packed repository representation
+├── 📄 scanner2.c          # L'implémentation principale du scanner
+├── 🔧 scanner             # Binaire compilé (Linux/macOS)
+├── 🔧 scanner2            # Binaire compilé alternatif
+├── 📝 test.micro          # Programme Micro d'exemple (sans begin/end)
+├── 📝 test1.micro         # Programme Micro d'exemple (avec begin/end)
+├── 📤 output.txt          # Exemple de flux de tokens généré depuis test.micro
+└── 📦 repomix-output.xml  # Représentation packagée du dépôt
 ```
 
-> **Note:** `scanner` and `scanner2` are compiled binaries and are not human-readable. They are excluded from the packed representation.
+> **Remarque :** `scanner` et `scanner2` sont des binaires compilés et ne sont pas lisibles par l'homme. Ils sont exclus de la représentation packagée.
 
 ---
 
-## 🔤 The Micro Language
+## 🔤 Le Langage Micro
 
-Micro is a minimal imperative language used in compiler-construction courses, notably inspired by the language in *Compiler Construction: Principles and Practice* by Kenneth C. Louden.
+Micro est un langage impératif minimal utilisé dans les cours de construction de compilateurs, notamment inspiré du langage de *Compiler Construction: Principles and Practice* de Kenneth C. Louden.
 
-### Grammar
+### Grammaire
 
 ```ebnf
 program     → "begin" stmt_list "end"
@@ -120,37 +120,37 @@ id_list     → id { "," id }
 expr_list   → expr { "," expr }
 ```
 
-### Lexical Conventions
+### Conventions Lexicales
 
-| Element | Pattern | Example |
-|---------|---------|---------|
-| Keyword | reserved word | `begin`, `end` |
-| Identifier | `letter (letter \| digit \| _)*` | `x`, `a1`, `_t` |
-| Integer | `digit+` | `52`, `0`, `001` |
-| Assignment | `:=` | `:=` |
+| Élément | Motif | Exemple |
+|---------|-------|---------|
+| Mot-clé | mot réservé | `begin`, `end` |
+| Identificateur | `lettre (lettre \| chiffre \| _)*` | `x`, `a1`, `_t` |
+| Entier | `chiffre+` | `52`, `0`, `001` |
+| Affectation | `:=` | `:=` |
 | Plus | `+` | `+` |
-| Minus | `-` | `-` |
-| LParen | `(` | `(` |
-| RParen | `)` | `)` |
-| Semicolon | `;` | `;` |
-| Comma | `,` | `,` |
-| Comment | `--` … end of line | `-- this is ok` |
-| Whitespace | space, tab, newline | *(ignored)* |
+| Moins | `-` | `-` |
+| Parenthèse Gauche | `(` | `(` |
+| Parenthèse Droite | `)` | `)` |
+| Point-virgule | `;` | `;` |
+| Virgule | `,` | `,` |
+| Commentaire | `--` … fin de ligne | `-- ceci est ok` |
+| Espace blanc | espace, tabulation, saut de ligne | *(ignoré)* |
 
 ---
 
-## 🏷️ Token Specification
+## 🏷️ Spécification des Tokens
 
-Tokens are defined as an `enum` in C:
+Les tokens sont définis comme un `enum` en C :
 
 ```c
 typedef enum {
-    begin,       // "begin" keyword
-    end,         // "end" keyword
-    read,        // "read" keyword
-    write,       // "write" keyword
-    id,          // identifier
-    intliteral,  // integer literal
+    begin,       // mot-clé "begin"
+    end,         // mot-clé "end"
+    read,        // mot-clé "read"
+    write,       // mot-clé "write"
+    id,          // identificateur
+    intliteral,  // littéral entier
     lparen,      // "("
     rparen,      // ")"
     semicolon,   // ";"
@@ -158,40 +158,40 @@ typedef enum {
     plusop,      // "+"
     minusop,     // "-"
     assignop,    // ":="
-    scan_eof     // end of input
+    scan_eof     // fin de l'entrée
 } token;
 ```
 
-Each token has a **type** and, for identifiers and integer literals, an associated **lexeme** stored in `token_buffer`.
+Chaque token a un **type** et, pour les identificateurs et les littéraux entiers, un **lexème** associé stocké dans `token_buffer`.
 
 ---
 
-## 🏗️ Architecture & Design
+## 🏗️ Architecture & Conception
 
-The scanner follows the classic **two-buffer / getchar-based** design described in the *Dragon Book*.
+Le scanner suit la conception classique **deux-tampons / basée sur getchar** décrite dans le *Dragon Book*.
 
-### Core Techniques
+### Techniques Fondamentales
 
-| Technique | Purpose |
-|-----------|---------|
-| `fgetc(source)` | Character-by-character input |
-| `ungetc(c, source)` | One-character lookahead |
-| `token_buffer[256]` | Lexeme accumulation |
-| `line_number` | Error reporting |
+| Technique | Objectif |
+|-----------|----------|
+| `fgetc(source)` | Entrée caractère par caractère |
+| `ungetc(c, source)` | Lookahead d'un caractère |
+| `token_buffer[256]` | Accumulation du lexème |
+| `line_number` | Signalement des erreurs |
 
-### Flow of Control
+### Flux de Contrôle
 
 ```mermaid
 flowchart TD
     A[main] --> B[scanner]
     B --> C[clear_buffer]
-    B --> D{Character Type?}
-    D -->|Whitespace| E[Skip]
-    D -->|Letter| F[buffer_char + check_reserved]
-    D -->|Digit| G[buffer_char → intliteral]
-    D -->|Punctuation| H[Return token]
-    D -->|Special| I[Handle := or --]
-    F --> J[Return token]
+    B --> D{Type de Caractère ?}
+    D -->|Espace blanc| E[Ignorer]
+    D -->|Lettre| F[buffer_char + check_reserved]
+    D -->|Chiffre| G[buffer_char → intliteral]
+    D -->|Ponctuation| H[Retourner token]
+    D -->|Spécial| I[Gérer := ou --]
+    F --> J[Retourner token]
     G --> J
     H --> J
     I --> J
@@ -201,24 +201,24 @@ flowchart TD
 
 ### Lookahead & `ungetc`
 
-After reading a letter, the scanner keeps consuming characters while they are alphanumeric or `_`. When it hits a non-matching character, it *pushes it back* using `ungetc` so the next call to `scanner()` can process it.
+Après avoir lu une lettre, le scanner continue à consommer des caractères tant qu'ils sont alphanumériques ou `_`. Quand il rencontre un caractère non correspondant, il le *repousse* avec `ungetc` pour que le prochain appel à `scanner()` puisse le traiter.
 
-> This is a simple form of **one-character lookahead** — the same technique used in hand-written scanners inside real compilers (e.g., GCC's `libcpp/lex.c`).
+> C'est une forme simple de **lookahead d'un caractère** — la même technique utilisée dans les scanners écrits à la main des compilateurs réels (ex. `libcpp/lex.c` de GCC).
 
 ---
 
-## 📖 Detailed Code Walkthrough
+## 📖 Analyse Détaillée du Code
 
-### 1. Header Includes
+### 1. Inclusions d'En-têtes
 
 ```c
 #include <stdio.h>    // FILE, fopen, fgetc, ungetc, fprintf, printf
 #include <ctype.h>    // isspace, isalpha, isalnum, isdigit
-#include <stdlib.h>   // exit (currently commented out)
+#include <stdlib.h>   // exit (actuellement commenté)
 #include <string.h>   // strlen, strcmp
 ```
 
-### 2. Global State
+### 2. État Global
 
 ```c
 char token_buffer[256];
@@ -227,14 +227,14 @@ FILE *output;
 int line_number = 1;
 ```
 
-| Variable | Purpose |
-|----------|---------|
-| `token_buffer` | Holds current lexeme (max 255 chars + null) |
-| `source` | Input file handle |
-| `output` | Output file handle |
-| `line_number` | Tracks current line for diagnostics |
+| Variable | Rôle |
+|----------|------|
+| `token_buffer` | Contient le lexème courant (max 255 caractères + null) |
+| `source` | Handle du fichier d'entrée |
+| `output` | Handle du fichier de sortie |
+| `line_number` | Suit la ligne courante pour les diagnostics |
 
-### 3. Buffer Helpers
+### 3. Aides de Tampon
 
 ```c
 void clear_buffer(void) { token_buffer[0] = '\0'; }
@@ -246,9 +246,9 @@ void buffer_char(int c) {
 }
 ```
 
-> ⚠️ **Performance Note:** `strlen` on every character makes this O(n²) in lexeme length. A production scanner would keep an index instead. See [Limitations](#-limitations--known-issues).
+> ⚠️ **Note de Performance :** `strlen` sur chaque caractère rend ceci O(n²) en longueur de lexème. Un scanner de production garderait plutôt un index. Voir [Limitations](#-limitations--problèmes-connus).
 
-### 4. Keyword Recognition
+### 4. Reconnaissance des Mots-Clés
 
 ```c
 token check_reserved(void) {
@@ -260,9 +260,9 @@ token check_reserved(void) {
 }
 ```
 
-A linear sequence of `strcmp` calls. Real compilers use a **perfect hash** or **trie** for O(1) keyword lookup.
+Une séquence linéaire d'appels `strcmp`. Les compilateurs réels utilisent un **hash parfait** ou un **trie** pour une recherche O(1).
 
-### 5. Error Handling
+### 5. Gestion des Erreurs
 
 ```c
 void lexical_error(int c) {
@@ -272,9 +272,9 @@ void lexical_error(int c) {
 }
 ```
 
-Errors are reported but **do not halt** the scanner — allowing recovery and continued scanning, similar to production compilers.
+Les erreurs sont signalées mais **n'arrêtent pas** le scanner — permettant la récupération et la poursuite du scan, comme dans les compilateurs de production.
 
-### 6. The Core: `scanner()`
+### 6. Le Cœur : `scanner()`
 
 ```c
 token scanner(void) {
@@ -308,7 +308,7 @@ token scanner(void) {
 
         else if (in_char == '-') {
             c = fgetc(source);
-            if (c == '-') {                      // comment
+            if (c == '-') {                      // commentaire
                 do {
                     in_char = fgetc(source);
                 } while (in_char != '\n' && in_char != EOF);
@@ -331,30 +331,30 @@ token scanner(void) {
 }
 ```
 
-#### Key Observations
+#### Observations Clés
 
-| Feature | Implementation |
-|---------|----------------|
-| Whitespace | Skipped, line counter incremented on `\n` |
-| Identifiers | `isalpha` start, then `isalnum` / `_` |
-| Integers | `isdigit` start, then `isdigit` |
-| Single-char tokens | Direct `return` for `( ) ; , +` |
-| Two-char operators | `-` (comment or minus), `:` + `=` → `:=` |
-| Comments | `--` consumed to end of line |
-| EOF | `scan_eof` returned |
+| Fonctionnalité | Implémentation |
+|----------------|----------------|
+| Espace blanc | Ignoré, compteur de ligne incrémenté sur `\n` |
+| Identificateurs | Début `isalpha`, puis `isalnum` / `_` |
+| Entiers | Début `isdigit`, puis `isdigit` |
+| Tokens à un caractère | `return` direct pour `( ) ; , +` |
+| Opérateurs à deux caractères | `-` (commentaire ou moins), `:` + `=` → `:=` |
+| Commentaires | `--` consommé jusqu'à la fin de ligne |
+| EOF | `scan_eof` retourné |
 
-> 🐛 **Bug Alert:** The comment branch does **not** `return` or `continue` after consuming the comment. Control falls through to the bottom of the `while` loop and reads the next character. In practice this works, but it is fragile. See [Limitations](#-limitations--known-issues).
+> 🐛 **Alerte Bug :** La branche des commentaires ne fait **pas** de `return` ni de `continue` après avoir consommé le commentaire. Le contrôle tombe à la fin de la boucle `while` et lit le caractère suivant. En pratique cela fonctionne, mais c'est fragile. Voir [Limitations](#-limitations--problèmes-connus).
 
-### 7. Output Functions
+### 7. Fonctions de Sortie
 
-`print_token` (to stdout) and `print_token_to_output` (to file) are duplicated logic. Each maps a `token` enum to a human-readable string:
+`print_token` (vers stdout) et `print_token_to_output` (vers fichier) sont une logique dupliquée. Chacune mappe un `token` enum vers une chaîne lisible :
 
 ```c
 case id:         fprintf(output, "ID(%s)\n", token_buffer); break;
 case intliteral: fprintf(output, "INT(%s)\n", token_buffer); break;
 ```
 
-> 💡 **Refactoring Opportunity:** These two functions could be unified by taking a `FILE *` parameter.
+> 💡 **Opportunité de Refactoring :** Ces deux fonctions pourraient être unifiées en prenant un paramètre `FILE *`.
 
 ### 8. `main()`
 
@@ -377,47 +377,47 @@ int main(int argc, char *argv[]) {
 }
 ```
 
-Standard CLI: `scanner <source> <output>`. The loop terminates when `scan_eof` is produced.
+CLI standard : `scanner <source> <sortie>`. La boucle se termine quand `scan_eof` est produit.
 
 ---
 
-## 🔨 Building the Scanner
+## 🔨 Compilation de l'Analyseur
 
-### Prerequisites
+### Prérequis
 
-| Requirement | Details |
-|-------------|---------|
-| **Compiler** | GCC, Clang, or MSVC |
-| **Build Tool** | *(Optional)* `make` |
+| Exigence | Détails |
+|----------|---------|
+| **Compilateur** | GCC, Clang ou MSVC |
+| **Outil de build** | *(Optionnel)* `make` |
 | **Shell** | POSIX-like (Linux, macOS, WSL, Git Bash) |
 
 ### Compilation
 
-#### Using GCC (Recommended)
+#### Avec GCC (Recommandé)
 
 ```bash
 gcc -Wall -Wextra -O2 -o scanner scanner2.c
 ```
 
-| Flag | Purpose |
-|------|---------|
-| `-Wall -Wextra` | Enable all warnings |
-| `-O2` | Optimize for speed |
-| `-o scanner` | Output binary name |
+| Option | Objectif |
+|--------|----------|
+| `-Wall -Wextra` | Activer tous les avertissements |
+| `-O2` | Optimiser pour la vitesse |
+| `-o scanner` | Nom du binaire de sortie |
 
-#### Using Clang
+#### Avec Clang
 
 ```bash
 clang -Wall -Wextra -O2 -o scanner scanner2.c
 ```
 
-#### Debug Build (with Sanitizers)
+#### Build de Débogage (avec Sanitizers)
 
 ```bash
 gcc -Wall -Wextra -g -fsanitize=address,undefined -o scanner_dbg scanner2.c
 ```
 
-> ✅ **Highly recommended** for academic work: detects buffer overflows and undefined behavior.
+> ✅ **Fortement recommandé** pour le travail académique : détecte les débordements de tampon et les comportements indéfinis.
 
 #### Windows (MSVC)
 
@@ -431,7 +431,7 @@ cl scanner2.c /Fe:scanner.exe
 gcc -Wall -Wextra -O2 -o scanner.exe scanner2.c
 ```
 
-### Optional Makefile
+### Makefile Optionnel
 
 ```make
 CC      = gcc
@@ -453,19 +453,19 @@ clean:
 .PHONY: all debug clean
 ```
 
-Then run:
+Puis exécutez :
 
 ```bash
-make          # release build
-make debug    # sanitizer build
-make clean    # remove binaries
+make          # build release
+make debug    # build avec sanitizer
+make clean    # supprimer les binaires
 ```
 
 ---
 
-## 🚀 Running the Scanner
+## 🚀 Exécution de l'Analyseur
 
-### Basic Usage
+### Utilisation de Base
 
 ```bash
 ./scanner test.micro output.txt
@@ -473,22 +473,22 @@ make clean    # remove binaries
 
 | Argument | Description |
 |----------|-------------|
-| `test.micro` | Input Micro source file |
-| `output.txt` | Destination for token stream |
+| `test.micro` | Fichier source Micro en entrée |
+| `output.txt` | Destination du flux de tokens |
 
-### With Sanitizer Build
+### Avec le Build Sanitizer
 
 ```bash
 ./scanner_dbg test.micro output.txt
 ```
 
-### Inspecting the Result
+### Inspection du Résultat
 
 ```bash
 cat output.txt
 ```
 
-### Running on Windows
+### Exécution sous Windows
 
 ```cmd
 scanner.exe test.micro output.txt
@@ -497,9 +497,9 @@ type output.txt
 
 ---
 
-## 📊 Sample Inputs & Expected Outputs
+## 📊 Exemples d'Entrées & Sorties Attendues
 
-### Input: `test.micro`
+### Entrée : `test.micro`
 
 ```micro
 x := 52;
@@ -509,7 +509,7 @@ w := 0.001;
 a := x + y;
 ```
 
-### Output: `output.txt`
+### Sortie : `output.txt`
 
 ```
 [ligne 1] ID(x)
@@ -540,9 +540,9 @@ a := x + y;
 [ligne 5] SCANEOF
 ```
 
-> **Observation:** Line 4 (`w := 0.001;`) is tokenized as `INT(0)` followed by `INT(001)`. The scanner does **not** support floating-point literals or the `.` character. This is a deliberate limitation of the Micro language, highlighting an important lesson: **the scanner's behavior is entirely determined by the language's lexical specification.**
+> **Observation :** La ligne 4 (`w := 0.001;`) est tokenisée comme `INT(0)` suivi de `INT(001)`. Le scanner ne supporte **pas** les littéraux flottants ni le caractère `.`. C'est une limitation délibérée du langage Micro, qui souligne une leçon importante : **le comportement du scanner est entièrement déterminé par la spécification lexicale du langage.**
 
-### Input: `test1.micro`
+### Entrée : `test1.micro`
 
 ```micro
 begin
@@ -554,108 +554,108 @@ a := x + y;
 end
 ```
 
-> ⚠️ **Expected Behavior:** `begin` and `end` are recognized as keywords (returned by `check_reserved`), but the `print_token_to_output` switch **does not have cases for `begin` and `end`**, so they fall into the `default:` branch and print `ERREUR`. This is a **bug** — see [Limitations](#-limitations--known-issues).
+> ⚠️ **Comportement Attendu :** `begin` et `end` sont reconnus comme mots-clés (retournés par `check_reserved`), mais le `switch` de `print_token_to_output` **n'a pas de cas pour `begin` et `end`**, donc ils tombent dans la branche `default:` et affichent `ERREUR`. C'est un **bug** — voir [Limitations](#-limitations--problèmes-connus).
 
 ---
 
-## ⚖️ Comparison with Real Compilers
+## ⚖️ Comparaison avec les Compilateurs Réels
 
-| Aspect | This Scanner | GCC / Clang / MSVC | Java Compiler (`javac`) |
-|--------|--------------|-------------------|-------------------------|
-| **Lexer Generator** | Hand-written | Hand-written (GCC), Table-driven (Clang) | Hand-written (Unicode-aware) |
-| **Character Encoding** | ASCII only | UTF-8, UTF-16, UTF-32, locale-aware | Full Unicode |
-| **Lookahead** | 1 character (`ungetc`) | 1–2 characters, sometimes arbitrary | Unlimited via `Reader` |
-| **Keyword Lookup** | Linear `strcmp` chain | Perfect hash / trie | Hash table |
-| **Buffer Management** | Fixed 256-byte buffer | Growable, memory-mapped, sentinel-based | Growable `StringBuilder` |
-| **Error Recovery** | Prints error, continues | Prints error, continues, resyncs | Prints error, continues |
-| **Comments** | `--` to EOL | `//`, `/* */`, `#`, `--` | `//`, `/* */`, `/** */` |
-| **Numeric Literals** | Integers only | Integers, floats, hex, octal, binary | Integers, floats, hex, octal, binary |
-| **String Literals** | Not supported | Supported, escapes, raw strings | Supported, escapes, text blocks |
-| **Preprocessor** | None | Full C preprocessor | None (annotations instead) |
-| **Position Tracking** | Line only | Line + column + file | Line + column + file |
-| **Performance** | ~µs per token | ~ns per token | ~ns per token |
-| **Standard Compliance** | Ad-hoc | ISO C / ISO C++ | JLS |
-| **Testing** | Manual | Massive test suites, fuzzing | Massive test suites, JCK |
+| Aspect | Ce Scanner | GCC / Clang / MSVC | Compilateur Java (`javac`) |
+|--------|-----------|-------------------|----------------------------|
+| **Générateur de Lexer** | Écrit à la main | Écrit à la main (GCC), piloté par table (Clang) | Écrit à la main (Unicode-aware) |
+| **Encodage des Caractères** | ASCII uniquement | UTF-8, UTF-16, UTF-32, sensible à la locale | Unicode complet |
+| **Lookahead** | 1 caractère (`ungetc`) | 1–2 caractères, parfois arbitraire | Illimité via `Reader` |
+| **Recherche de Mots-Clés** | Chaîne `strcmp` linéaire | Hash parfait / trie | Table de hachage |
+| **Gestion de Tampon** | Tampon fixe de 256 octets | Extensible, mappé en mémoire, basé sur sentinelle | `StringBuilder` extensible |
+| **Récupération d'Erreur** | Affiche l'erreur, continue | Affiche l'erreur, continue, resynchronise | Affiche l'erreur, continue |
+| **Commentaires** | `--` jusqu'à fin de ligne | `//`, `/* */`, `#`, `--` | `//`, `/* */`, `/** */` |
+| **Littéraux Numériques** | Entiers uniquement | Entiers, flottants, hex, octal, binaire | Entiers, flottants, hex, octal, binaire |
+| **Littéraux Chaînes** | Non supportés | Supportés, échappements, raw strings | Supportés, échappements, text blocks |
+| **Préprocesseur** | Aucun | Préprocesseur C complet | Aucun (annotations à la place) |
+| **Suivi de Position** | Ligne uniquement | Ligne + colonne + fichier | Ligne + colonne + fichier |
+| **Performance** | ~µs par token | ~ns par token | ~ns par token |
+| **Conformité Standard** | Ad-hoc | ISO C / ISO C++ | JLS |
+| **Tests** | Manuels | Suites massives, fuzzing | Suites massives, JCK |
 
-### Deeper Comparisons
+### Comparaisons Approfondies
 
-#### 1. Lexer Generators vs. Hand-Written Scanners
+#### 1. Générateurs de Lexer vs. Scanners Écrits à la Main
 
-Real compilers rarely use tools like **Lex/Flex** for their main lexer:
+Les compilateurs réels utilisent rarement des outils comme **Lex/Flex** pour leur lexer principal :
 
-| Compiler | Lexer Location | Approach |
-|----------|----------------|----------|
-| **GCC** | `libcpp/lex.c` | Hand-written for performance |
-| **Clang** | `clang/lib/Lex/` | Hand-written, table-driven |
-| **Java** | `src/jdk.compiler/.../Scanner.java` | Hand-written |
+| Compilateur | Emplacement du Lexer | Approche |
+|-------------|----------------------|----------|
+| **GCC** | `libcpp/lex.c` | Écrit à la main pour la performance |
+| **Clang** | `clang/lib/Lex/` | Écrit à la main, piloté par table |
+| **Java** | `src/jdk.compiler/.../Scanner.java` | Écrit à la main |
 
-Hand-written scanners are preferred because:
-- They handle context-sensitive cases (e.g., `>>` in C++ templates vs. shift operator) more easily.
-- They are faster (no table lookup overhead in the hot path).
-- They integrate better with the parser (e.g., parser feedback into the lexer).
+Les scanners écrits à la main sont préférés car :
+- Ils gèrent plus facilement les cas sensibles au contexte (ex. `>>` dans les templates C++ vs. opérateur de décalage).
+- Ils sont plus rapides (pas de surcharge de lookup de table dans le chemin critique).
+- Ils s'intègrent mieux avec le parseur (ex. retour du parseur vers le lexer).
 
-> This project is a **hand-written scanner**, aligning with industry practice.
+> Ce projet est un **scanner écrit à la main**, s'alignant sur la pratique industrielle.
 
-#### 2. Token Representation
+#### 2. Représentation des Tokens
 
-| Approach | This Project | Real Compilers |
-|----------|--------------|----------------|
-| **Type** | `enum` | Rich struct/class |
-| **Lexeme** | Global `token_buffer` | Stored in token |
-| **Location** | Global `line_number` | `SourceLocation` (file, line, column) |
-| **Value** | Global buffer | Union/`std::variant` |
+| Approche | Ce Projet | Compilateurs Réels |
+|----------|-----------|---------------------|
+| **Type** | `enum` | Struct/classe riche |
+| **Lexème** | `token_buffer` global | Stocké dans le token |
+| **Position** | `line_number` global | `SourceLocation` (fichier, ligne, colonne) |
+| **Valeur** | Tampon global | Union/`std::variant` |
 
 ```c
-// Simplified Clang token
+// Token Clang simplifié
 class Token {
-    tok::TokenKind Kind;     // token type
-    SourceLocation Location; // file, line, column
-    const char *Spelling;    // lexeme
+    tok::TokenKind Kind;     // type de token
+    SourceLocation Location; // fichier, ligne, colonne
+    const char *Spelling;    // lexème
     ...
 };
 ```
 
-> The lesson: **tokens should carry source location and lexeme**, not rely on globals.
+> La leçon : **les tokens doivent porter la position source et le lexème**, pas dépendre de globales.
 
-#### 3. Error Recovery
+#### 3. Récupération d'Erreur
 
-Real compilers distinguish:
-- **Lexical errors** — reported, skipped
-- **Syntactic errors** — reported, parser resynchronizes
-- **Semantic errors** — reported, may continue
+Les compilateurs réels distinguent :
+- **Erreurs lexicales** — signalées, ignorées
+- **Erreurs syntaxiques** — signalées, le parseur resynchronise
+- **Erreurs sémantiques** — signalées, peut continuer
 
-This scanner only handles lexical errors, and even then, only prints them. A production scanner would maintain a list of errors, use a `Diagnostic` object with severity levels, and support `#pragma` and suppression.
+Ce scanner ne gère que les erreurs lexicales, et encore, il ne fait que les afficher. Un scanner de production maintiendrait une liste d'erreurs, utiliserait un objet `Diagnostic` avec des niveaux de sévérité, et supporterait `#pragma` et la suppression.
 
-#### 4. Unicode and Locale
+#### 4. Unicode et Locale
 
-`isalpha` and `isdigit` are **locale-dependent** and only handle ASCII by default. Real compilers use Unicode character databases (e.g., ICU), support identifiers like `café`, `变量`, `переменная`, and handle normalization forms (NFC, NFD).
+`isalpha` et `isdigit` sont **sensibles à la locale** et ne gèrent que l'ASCII par défaut. Les compilateurs réels utilisent des bases de données de caractères Unicode (ex. ICU), supportent des identificateurs comme `café`, `变量`, `переменная`, et gèrent les formes de normalisation (NFC, NFD).
 
-#### 5. Performance Considerations
+#### 5. Considérations de Performance
 
-| Technique | This Scanner | Production Lexers |
-|-----------|--------------|-------------------|
-| Character classification | `ctype.h` | Lookup tables, SIMD |
-| Buffer growth | Fixed 256 | Dynamic, doubling |
-| Keyword lookup | `strcmp` | Perfect hash, trie |
-| I/O | `fgetc` | Memory-mapped files, buffered reads |
-| Token allocation | Stack/global | Arena allocators |
+| Technique | Ce Scanner | Lexers de Production |
+|-----------|-----------|----------------------|
+| Classification de caractères | `ctype.h` | Tables de lookup, SIMD |
+| Croissance de tampon | Fixe 256 | Dynamique, doublement |
+| Recherche de mots-clés | `strcmp` | Hash parfait, trie |
+| I/O | `fgetc` | Fichiers mappés en mémoire, lectures tamponnées |
+| Allocation de tokens | Pile/globale | Allocateurs d'arène |
 
-> A production lexer can tokenize **millions of tokens per second**. This scanner is orders of magnitude slower, but its simplicity is its pedagogical strength.
+> Un lexer de production peut tokeniser **des millions de tokens par seconde**. Ce scanner est des ordres de grandeur plus lent, mais sa simplicité est sa force pédagogique.
 
 ---
 
-## 📚 Academic Background & Theory
+## 📚 Contexte Académique & Théorie
 
-### The Role of the Scanner in Compilation
+### Le Rôle du Scanner dans la Compilation
 
-The scanner performs **lexical analysis**: converting a stream of characters into a stream of tokens. It is the **first phase** of compilation and interfaces directly with the **parser** (syntax analysis).
+Le scanner effectue l'**analyse lexicale** : convertir un flux de caractères en un flux de tokens. C'est la **première phase** de la compilation et il interface directement avec le **parseur** (analyse syntaxique).
 
-Formally, the scanner implements a **regular language** recognizer. Each token class is described by a **regular expression**, which is compiled into a **finite automaton** (DFA or NFA). The scanner is essentially a **DFA simulator**.
+Formellement, le scanner implémente un reconnaisseur de **langage régulier**. Chaque classe de token est décrite par une **expression régulière**, qui est compilée en un **automate fini** (DFA ou NFA). Le scanner est essentiellement un **simulateur de DFA**.
 
-### Regular Expressions for Micro Tokens
+### Expressions Régulières pour les Tokens Micro
 
-| Token | Regular Expression |
-|-------|-------------------|
+| Token | Expression Régulière |
+|-------|---------------------|
 | `begin` | `begin` |
 | `end` | `end` |
 | `read` | `read` |
@@ -669,10 +669,10 @@ Formally, the scanner implements a **regular language** recognizer. Each token c
 | `rparen` | `)` |
 | `semicolon` | `;` |
 | `comma` | `,` |
-| comment | `--[^\n]*` |
-| whitespace | `[ \t\n]+` |
+| commentaire | `--[^\n]*` |
+| espace blanc | `[ \t\n]+` |
 
-### Finite Automaton for Identifiers
+### Automate Fini pour les Identificateurs
 
 ```mermaid
 stateDiagram-v2
@@ -682,40 +682,40 @@ stateDiagram-v2
     q1 --> [*]
 ```
 
-- `q0` is the start state
-- `q1` is the accepting state
-- The scanner implements this DFA implicitly via the `isalpha` / `isalnum` loop
+- `q0` est l'état initial
+- `q1` est l'état acceptant
+- Le scanner implémente ce DFA implicitement via la boucle `isalpha` / `isalnum`
 
-### The Maximal Munch Rule
+### La Règle du Plus Long Match
 
-The scanner follows the **maximal munch** (longest match) rule: it consumes as many characters as possible while still matching a token.
+Le scanner suit la règle du **plus long match** (maximal munch) : il consomme autant de caractères que possible tout en correspondant à un token.
 
-| Input | Tokenization | Reason |
-|-------|--------------|--------|
-| `:=` | `ASSIGNOP` | Preferred over `:` + `=` |
-| `123abc` | `INT(123)` then `ID(abc)` | Digits stop integer, letter starts identifier |
+| Entrée | Tokenisation | Raison |
+|--------|--------------|--------|
+| `:=` | `ASSIGNOP` | Préféré à `:` puis `=` |
+| `123abc` | `INT(123)` puis `ID(abc)` | Les chiffres arrêtent l'entier, une lettre démarre un identificateur |
 
-> This rule is universal across compilers (C, C++, Java, Python, etc.).
+> Cette règle est universelle dans tous les compilateurs (C, C++, Java, Python, etc.).
 
-### References
+### Références
 
-1. Aho, A. V., Lam, M. S., Sethi, R., & Ullman, J. D. (2006). *Compilers: Principles, Techniques, and Tools* (2nd ed.). Pearson. — **The Dragon Book**, Chapters 3.1–3.4.
-2. Louden, K. C. (1997). *Compiler Construction: Principles and Practice*. PWS Publishing. — Origin of the Micro language.
+1. Aho, A. V., Lam, M. S., Sethi, R., & Ullman, J. D. (2006). *Compilers: Principles, Techniques, and Tools* (2nd ed.). Pearson. — **Le Dragon Book**, Chapitres 3.1–3.4.
+2. Louden, K. C. (1997). *Compiler Construction: Principles and Practice*. PWS Publishing. — Origine du langage Micro.
 3. Levine, J. R. (2009). *Flex & Bison*. O'Reilly Media.
 4. Parr, T. (2013). *The Definitive ANTLR 4 Reference*. Pragmatic Bookshelf.
-5. GCC source: `libcpp/lex.c`, `gcc/cp/lex.c`.
-6. Clang source: `clang/lib/Lex/Lexer.cpp`.
-7. OpenJDK source: `src/jdk.compiler/share/classes/com/sun/tools/javac/parser/Scanner.java`.
+5. Source GCC : `libcpp/lex.c`, `gcc/cp/lex.c`.
+6. Source Clang : `clang/lib/Lex/Lexer.cpp`.
+7. Source OpenJDK : `src/jdk.compiler/share/classes/com/sun/tools/javac/parser/Scanner.java`.
 
 ---
 
-## ⚠️ Limitations & Known Issues
+## ⚠️ Limitations & Problèmes Connus
 
-### 1. Missing Keyword Cases in Output
+### 1. Cas de Mots-Clés Manquants dans la Sortie
 
-`print_token_to_output` has no `case begin:` or `case end:`. As a result, `begin` and `end` fall into `default:` and print `ERREUR`.
+`print_token_to_output` n'a pas de `case begin:` ni `case end:`. En conséquence, `begin` et `end` tombent dans `default:` et affichent `ERREUR`.
 
-**Fix:**
+**Correction :**
 
 ```c
 case begin:  fprintf(output, "BEGIN\n");  break;
@@ -724,11 +724,11 @@ case read:   fprintf(output, "READ\n");   break;
 case write:  fprintf(output, "WRITE\n");  break;
 ```
 
-### 2. O(n²) Buffer Append
+### 2. Ajout O(n²) au Tampon
 
-`buffer_char` calls `strlen` on every character. For long identifiers or numbers, this is quadratic.
+`buffer_char` appelle `strlen` sur chaque caractère. Pour de longs identificateurs ou nombres, c'est quadratique.
 
-**Fix:**
+**Correction :**
 
 ```c
 int token_len = 0;
@@ -736,97 +736,97 @@ void clear_buffer(void) { token_len = 0; token_buffer[0] = '\0'; }
 void buffer_char(int c) { token_buffer[token_len++] = (char)c; token_buffer[token_len] = '\0'; }
 ```
 
-### 3. Fixed-Size Buffer (256 bytes)
+### 3. Tampon de Taille Fixe (256 octets)
 
-Longer lexemes cause a **buffer overflow**.
+Des lexèmes plus longs causent un **débordement de tampon**.
 
-**Fix:** Bounds-check in `buffer_char`, or use dynamic allocation.
+**Correction :** Vérifier les bornes dans `buffer_char`, ou utiliser une allocation dynamique.
 
-### 4. `ungetc` Only Guarantees One Character
+### 4. `ungetc` ne Garantit qu'un Caractère
 
-`ungetc` is only guaranteed to push back **one** character by the C standard. Pushing back more is implementation-defined. This scanner pushes back at most one at a time, so it is safe, but it is a constraint to remember.
+`ungetc` n'est garanti de repousser qu'**un** caractère par le standard C. En repousser plus est défini par l'implémentation. Ce scanner n'en repousse qu'un à la fois, donc c'est sûr, mais c'est une contrainte à retenir.
 
-### 5. No Column Tracking
+### 5. Pas de Suivi de Colonne
 
-Only `line_number` is tracked. Real compilers report `line:column` for diagnostics.
+Seul `line_number` est suivi. Les compilateurs réels signalent `ligne:colonne` pour les diagnostics.
 
-**Fix:** Add `int column = 1;` and increment on every `fgetc`.
+**Correction :** Ajouter `int column = 1;` et incrémenter à chaque `fgetc`.
 
-### 6. No `read`/`write` Handling in Output Switch
+### 6. Pas de Gestion de `read`/`write` dans le Switch de Sortie
 
-Same as the keyword issue — these tokens are returned by `check_reserved` but not printed.
+Même problème que pour les mots-clés — ces tokens sont retournés par `check_reserved` mais non affichés.
 
-### 7. Comment Fall-Through
+### 7. Chute à Travers le Commentaire
 
-After consuming a comment, the code does not `continue` or `return`. It falls through to the end of the `while` body, then loops. This works but is unclear.
+Après avoir consommé un commentaire, le code ne fait ni `continue` ni `return`. Il tombe à la fin du corps du `while`, puis boucle. Cela fonctionne mais n'est pas clair.
 
-**Fix:** `continue;` after the comment loop.
+**Correction :** `continue;` après la boucle de commentaire.
 
-### 8. No Handling of `*`, `/`, `=`, `<`, `>`
+### 8. Pas de Gestion de `*`, `/`, `=`, `<`, `>`
 
-The Micro language as specified here does not include them, but if the language is extended, the scanner must be updated.
+Le langage Micro tel que spécifié ici ne les inclut pas, mais si le langage est étendu, le scanner doit être mis à jour.
 
-### 9. No Floating-Point Support
+### 9. Pas de Support des Flottants
 
-`0.001` is tokenized as two integers. If Micro is extended to support floats, the scanner needs a `floatliteral` token and a `.` handler.
+`0.001` est tokenisé comme deux entiers. Si Micro est étendu pour supporter les flottants, le scanner a besoin d'un token `floatliteral` et d'un gestionnaire pour `.`.
 
-### 10. Global State
+### 10. État Global
 
-`source`, `output`, `token_buffer`, and `line_number` are globals. This makes the scanner non-reentrant and hard to test.
+`source`, `output`, `token_buffer` et `line_number` sont des globales. Cela rend le scanner non-réentrant et difficile à tester.
 
-**Fix:** Encapsulate in a `struct Scanner`.
+**Correction :** Encapsuler dans une `struct Scanner`.
 
 ---
 
-## 🔬 Suggested Extensions for Further Research
+## 🔬 Extensions Suggérées pour la Recherche
 
 | # | Extension | Description |
 |---|-----------|-------------|
-| 1 | **Add a Parser** | Use recursive descent or yacc/bison to build a parser on top of the scanner |
-| 2 | **Add a Symbol Table** | Track identifiers and their attributes (type, scope, value) |
-| 3 | **Add Type Checking** | Extend Micro with `int` and `float` types, implement a type checker |
-| 4 | **Generate Intermediate Code** | Emit three-address code or a simple stack-based IR |
-| 5 | **Add Unicode Support** | Replace `isalpha`/`isdigit` with Unicode-aware functions |
-| 6 | **Add a Lexer Generator** | Implement a small Lex-like tool that reads regex and produces a DFA |
-| 7 | **Benchmark Against Real Compilers** | Use `perf` or `valgrind` to profile the scanner |
-| 8 | **Fuzz Testing** | Use AFL or libFuzzer to fuzz the scanner with random inputs |
-| 9 | **Formal Verification** | Model the scanner in Coq or TLA+ and prove properties |
-| 10 | **Error Recovery Strategies** | Implement panic-mode, phrase-level, and error productions |
-| 11 | **Parallel Scanning** | Explore parallel lexing by splitting input into chunks |
-| 12 | **Incremental Scanning** | Implement an incremental lexer for IDE use |
+| 1 | **Ajouter un Parseur** | Utiliser la descente récursive ou yacc/bison pour construire un parseur au-dessus du scanner |
+| 2 | **Ajouter une Table des Symboles** | Suivre les identificateurs et leurs attributs (type, portée, valeur) |
+| 3 | **Ajouter la Vérification de Type** | Étendre Micro avec les types `int` et `float`, implémenter un vérificateur de type |
+| 4 | **Générer du Code Intermédiaire** | Émettre du code à trois adresses ou un IR simple basé sur une pile |
+| 5 | **Ajouter le Support Unicode** | Remplacer `isalpha`/`isdigit` par des fonctions Unicode-aware |
+| 6 | **Ajouter un Générateur de Lexer** | Implémenter un petit outil type Lex qui lit des regex et produit un DFA |
+| 7 | **Comparer avec les Compilateurs Réels** | Utiliser `perf` ou `valgrind` pour profiler le scanner |
+| 8 | **Tests par Fuzzing** | Utiliser AFL ou libFuzzer pour fuzzer le scanner avec des entrées aléatoires |
+| 9 | **Vérification Formelle** | Modéliser le scanner en Coq ou TLA+ et prouver des propriétés |
+| 10 | **Stratégies de Récupération d'Erreur** | Implémenter le mode panique, la récupération au niveau phrase et les productions d'erreur |
+| 11 | **Scan Parallèle** | Explorer le lexing parallèle en divisant l'entrée en morceaux |
+| 12 | **Scan Incrémental** | Implémenter un lexer incrémental pour une utilisation dans un IDE |
 
 ---
 
-## 🧪 Testing Strategy
+## 🧪 Stratégie de Test
 
-### Unit Tests
+### Tests Unitaires
 
-Create a set of `.micro` files, each testing one feature:
+Créer un ensemble de fichiers `.micro`, chacun testant une fonctionnalité :
 
-| File | Tests |
-|------|-------|
+| Fichier | Tests |
+|---------|-------|
 | `test_keywords.micro` | `begin`, `end`, `read`, `write` |
-| `test_ids.micro` | Identifiers with `_` and digits |
-| `test_ints.micro` | Integers, leading zeros |
+| `test_ids.micro` | Identificateurs avec `_` et chiffres |
+| `test_ints.micro` | Entiers, zéros en tête |
 | `test_ops.micro` | `:=`, `+`, `-` |
 | `test_punct.micro` | `(`, `)`, `;`, `,` |
-| `test_comments.micro` | `--` comments |
-| `test_errors.micro` | Illegal characters |
-| `test_empty.micro` | Empty file |
-| `test_eof.micro` | File without trailing newline |
+| `test_comments.micro` | Commentaires `--` |
+| `test_errors.micro` | Caractères illégaux |
+| `test_empty.micro` | Fichier vide |
+| `test_eof.micro` | Fichier sans nouvelle ligne finale |
 
-### Golden Tests
+### Tests de Référence (Golden)
 
-For each input, store the expected output. Run the scanner and diff:
+Pour chaque entrée, stocker la sortie attendue. Lancer le scanner et comparer :
 
 ```bash
 ./scanner test_keywords.micro out.txt
 diff out.txt expected/test_keywords.out
 ```
 
-### Sanitizer Tests
+### Tests avec Sanitizers
 
-Run all tests under ASan/UBSan:
+Lancer tous les tests sous ASan/UBSan :
 
 ```bash
 make debug
@@ -836,65 +836,65 @@ for f in tests/*.micro; do ./scanner_dbg "$f" /dev/null; done
 ### Fuzzing
 
 ```bash
-# Using AFL
+# Avec AFL
 afl-gcc -o scanner_afl scanner2.c
 afl-fuzz -i seeds/ -o findings/ ./scanner_afl @@ /dev/null
 ```
 
-### Continuous Integration
+### Intégration Continue
 
-Add a `.github/workflows/ci.yml` to build and test on Linux, macOS, and Windows.
+Ajouter un `.github/workflows/ci.yml` pour compiler et tester sur Linux, macOS et Windows.
 
 ---
 
-## 📜 License & Acknowledgments
+## 📜 Licence & Remerciements
 
-This project is an educational implementation of a scanner for the **Micro** language, inspired by:
+Ce projet est une implémentation éducative d'un scanner pour le langage **Micro**, inspiré par :
 
 - Kenneth C. Louden, *Compiler Construction: Principles and Practice*.
 - Aho, Lam, Sethi, Ullman, *Compilers: Principles, Techniques, and Tools*.
 
-It is intended for **academic use**. Feel free to fork, extend, and use it in courses on compiler construction.
+Il est destiné à un **usage académique**. N'hésitez pas à forker, étendre et utiliser dans des cours de construction de compilateurs.
 
-### Suggested Citation
+### Citation Suggérée
 
 ```bibtex
 @misc{micro_scanner,
-  title  = {Micro Language Scanner},
-  author = {Anonymous},
+  title  = {Analyseur Lexical du Langage Micro},
+  author = {Anonyme},
   year   = {2024},
-  note   = {Educational lexical analyzer in C},
+  note   = {Analyseur lexical éducatif en C},
   url    = {https://github.com/example/micro-scanner}
 }
 ```
 
 ---
 
-## 🗂️ Quick Reference Card
+## 🗂️ Carte de Référence Rapide
 
-### Build Commands
+### Commandes de Compilation
 
 ```bash
-# Build
+# Compiler
 gcc -Wall -Wextra -O2 -o scanner scanner2.c
 
-# Run
+# Exécuter
 ./scanner test.micro output.txt
 
-# View output
+# Voir la sortie
 cat output.txt
 
-# Debug build
+# Build de débogage
 gcc -g -fsanitize=address,undefined -o scanner_dbg scanner2.c
 ./scanner_dbg test.micro output.txt
 ```
 
-### Token Reference
+### Référence des Tokens
 
-| Token | Output String | Example |
-|-------|---------------|---------|
-| Identifier | `ID(name)` | `ID(x)` |
-| Integer | `INT(value)` | `INT(52)` |
+| Token | Chaîne de Sortie | Exemple |
+|-------|------------------|---------|
+| Identificateur | `ID(name)` | `ID(x)` |
+| Entier | `INT(value)` | `INT(52)` |
 | `:=` | `ASSIGNOP` | |
 | `+` | `PLUSOP` | |
 | `-` | `MINUSOP` | |
@@ -904,22 +904,22 @@ gcc -g -fsanitize=address,undefined -o scanner_dbg scanner2.c
 | `,` | `COMMA` | |
 | EOF | `SCANEOF` | |
 
-### Common Issues
+### Problèmes Courants
 
-| Issue | Solution |
-|-------|----------|
-| `begin`/`end` print `ERREUR` | Add cases to output switch |
-| Buffer overflow | Increase `token_buffer` size or bounds-check |
-| Slow on long identifiers | Replace `strlen` with index counter |
+| Problème | Solution |
+|----------|----------|
+| `begin`/`end` affichent `ERREUR` | Ajouter des cas au switch de sortie |
+| Débordement de tampon | Augmenter la taille de `token_buffer` ou vérifier les bornes |
+| Lent sur de longs identificateurs | Remplacer `strlen` par un compteur d'index |
 
 ---
 
 <div align="center">
 
-**⭐ Star this repository if you find it useful! ⭐**
+**⭐ Star ce dépôt si tu le trouves utile ! ⭐**
 
-*Made with ❤️ for compiler construction education*
+*Fait avec ❤️ pour l'enseignement de la construction de compilateurs*
 
-[Back to Top](#micro-language-scanner)
+[Retour en Haut](#analyseur-lexical-du-langage-micro)
 
 </div>
